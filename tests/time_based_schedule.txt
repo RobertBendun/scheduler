@@ -1,0 +1,3 @@
+This job should be called after 1 second
+This job should be called after 2 seconds
+Last one, should close the app
