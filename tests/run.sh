@@ -5,7 +5,7 @@ make
 Successfull=0
 Total=0
 
-for expected in "$(ls ./tests/*.txt)"; do
+for expected in $(ls ./tests/*.txt); do
 	test="$(basename "$expected" .txt).out"
 	if ./tests/"$test" | diff - "$expected"; then
 		Successfull="$(expr "$Successfull" + 1)"
