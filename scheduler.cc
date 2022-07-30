@@ -5,19 +5,15 @@
 
 using namespace scheduler;
 
+
+// Support for range loops on iterator pairs for nicer code below
 namespace std
 {
 	template<std::forward_iterator T1, std::sentinel_for<T1> T2>
-	T1 begin(std::pair<T1, T2> const& range)
-	{
-		return range.first;
-	}
+	T1 begin(std::pair<T1, T2> const& range) { return range.first; }
 
 	template<std::forward_iterator T1, std::sentinel_for<T1> T2>
-	T2 end(std::pair<T1, T2> const& range)
-	{
-		return range.second;
-	}
+	T2 end(std::pair<T1, T2> const& range) { return range.second; }
 }
 
 Scheduler::Scheduler()
@@ -25,6 +21,18 @@ Scheduler::Scheduler()
 	jobs.change_scheduler(this);
 }
 
+/// Activate runs scheduler until stop is issued.
+///
+/// While stop was not requested:
+///   Wait at arrival of any dependency free jobs
+///   If there is job:
+///     If this job can be completed. (we passed time that was specified as time offset):
+///				Remove it from jobs queue
+///				Remove it from pending set
+///				Drop dependencies_count of all successors of this job
+///       And execute it (run work callback)
+///     Otherwise:
+///       Wait until job is ready or there are newer job
 void Scheduler::activate(std::stop_token stop)
 {
 	while (!stop.stop_requested()) {
