@@ -10,10 +10,8 @@ int main()
 	Scheduler scheduler;
 	std::stop_source stop;
 
-	scheduler::Job_Id jobs[2];
-
-	jobs[0] = scheduler.schedule(3s, [&] { std::cout << "Line #3" << std::endl; stop.request_stop(); });
-	jobs[1] = scheduler.schedule(1s, [&] {
+	scheduler.schedule(3s, [&] { std::cout << "Line #3" << std::endl; stop.request_stop(); });
+	scheduler.schedule(1s, [&] {
 		std::cout << "Line #1" << std::endl;
 		scheduler.schedule(1s, [] { std::cout << "Line #2" << std::endl; });
 	});

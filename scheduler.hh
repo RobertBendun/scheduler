@@ -71,7 +71,7 @@ namespace scheduler
 		/// Run scheduler in given thread
 		void activate(std::stop_token);
 
-		/// Add given thread to possible threads of execution
+		/// Add given thread to possible threads of execution (currently unsupported)
 		void add_execution_thread();
 
 		/// Allocates new job id (for internal use)
