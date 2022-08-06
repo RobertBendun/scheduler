@@ -32,28 +32,19 @@ namespace scheduler
 		/// Work that job must done
 		std::function<void()> work;
 
-		/// Custom comparator for priority_queue
+		/// Custom comparator for priority_queue. We don't want to define general ordering for this type.
 		struct Compare
 		{
-			Scheduler const* s;
 			bool operator()(Job const& lhs, Job const& rhs) const;
 		};
 	};
 
-	using Priority_Queue_Base = std::priority_queue<Job, std::vector<Job>, Job::Compare>;
-
-	/// std::priority_queue wrapper which allows some introspection into raw queue data
-	struct Priority_Queue : Priority_Queue_Base
-	{
-		inline void change_scheduler(Scheduler const* s) { comp.s = s; }
-
-		auto begin() { return c.cbegin(); }
-		auto end() { return c.cend(); }
-	};
+	/// Specialization of priority_queue template with custom Job comparator.
+	using Priority_Queue = std::priority_queue<Job, std::vector<Job>, Job::Compare>;
 
 	struct Scheduler
 	{
-		Scheduler();
+		Scheduler() = default;
 		Scheduler(Scheduler const&) = delete;
 		Scheduler(Scheduler &&) = delete;
 
@@ -61,7 +52,7 @@ namespace scheduler
 		Scheduler& operator=(Scheduler &&) = delete;
 
 		/// Schedule job based on time that it should be run
-		Job_Id schedule(std::chrono::steady_clock::duration when, std::function<void()> job);
+		Job_Id schedule(Clock::duration when, std::function<void()> job);
 
 		/// Schedule job after given set of jobs. If completed or never created Job_Id is passed
 		/// then it is ignored. Only valid predecessors are those in the system at the moment
@@ -77,8 +68,11 @@ namespace scheduler
 		/// Allocates new job id (for internal use)
 		Job_Id acquire_new_job_id();
 
-		/// Collections of all the jobs that are pending
-		Priority_Queue jobs{};
+		/// Collection of all the jobs that are ready to execute (without depedencies)
+		Priority_Queue ready_jobs{};
+
+		// Collection of all the jobs that are waiting for their dependencies to resolve
+		std::unordered_map<Job_Id, Job> jobs_with_dependencies{};
 
 		/// Flag that notifies updates into `jobs`
 		std::condition_variable_any waiting_flag{};
